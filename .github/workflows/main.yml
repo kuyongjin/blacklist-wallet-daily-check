@@ -2,19 +2,22 @@ name: Daily OFAC List Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 매일 한국 시간 오전 9시 실행
-  workflow_dispatch:      # 지금 바로 테스트해볼 수 있는 버튼 생성
+    - cron: '0 0 * * *'  # 매일 한국 시간 오전 9시
+  workflow_dispatch:      # 수동 실행 버튼
+
+# 전역 환경 변수 설정 (Node.js 24 강제 사용)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # 저장소에 파일을 쓸 수 있는 권한 부여
     permissions:
       contents: write
       
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # 최신 버전 유지
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,17 +30,16 @@ jobs:
 
       - name: Run script
         run: |
-          # 원본 데이터 다운로드 및 압축 해제
+          # 데이터 다운로드 및 추출 실행
           wget https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
           unzip -o SDN_ADVANCED.ZIP
-          # 파이썬 실행
           python generate_ofac.py
 
       - name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          # 변경사항 확인 후 커밋 (XBT->BTC 변환된 CSV 반영)
           git add ofac_sanctioned_addresses.csv
-          # 변경사항이 있을 때만 커밋
-          git commit -m "Update OFAC list: $(date +'%Y-%m-%d')" || exit 0
+          git commit -m "Update OFAC list: $(date +'%Y-%m-%d') (Node24)" || exit 0
           git push
