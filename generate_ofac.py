@@ -30,7 +30,13 @@ def main():
         ft_id = feature.attrib.get('FeatureTypeID')
         if ft_id in feature_map:
             coin_symbol = feature_map[ft_id]
-            # A열 내용을 "코인명(ofac제재지갑)" 형식으로 강제 지정
+            
+            # --- [수정 구간] XBT를 BTC로 변환 ---
+            if coin_symbol.upper() == "XBT":
+                coin_symbol = "BTC"
+            # -------------------------------
+            
+            # A열 내용을 "코인명(ofac제재지갑)" 형식으로 지정
             coin_display_name = f"{coin_symbol}(ofac제재지갑)"
             
             for version_detail in feature.findall(".//sdn:VersionDetail", namespace):
@@ -38,7 +44,7 @@ def main():
                 if address:
                     all_data.append([coin_display_name, address])
 
-    # 데이터프레임 변환 (헤더 이름도 요청하신 대로 설정)
+    # 데이터프레임 변환
     df = pd.DataFrame(all_data, columns=["코인명(ofac제재지갑)", "지갑주소"])
     
     # 중복 제거 및 정렬
@@ -47,7 +53,7 @@ def main():
     # CSV 파일로 저장
     output_name = "ofac_sanctioned_addresses.csv"
     df.to_csv(output_name, index=False, encoding='utf-8-sig')
-    print(f"성공: {len(df)}개 주소 추출 완료 -> {output_name}")
+    print(f"성공: {len(df)}개 주소 추출 완료 (XBT->BTC 변환 적용)")
 
 if __name__ == "__main__":
     main()
