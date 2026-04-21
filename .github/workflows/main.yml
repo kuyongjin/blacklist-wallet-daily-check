@@ -1,40 +1,16 @@
-name: Daily OFAC List Update
-
-on:
-  schedule:
-    - cron: '0 0 * * *'  # 매일 오전 9시
-  workflow_dispatch:      # 수동 실행
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    # 쓰기 권한 명시
-    permissions:
-      contents: write
-      
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install pandas requests
-
-      - name: Run script
-        run: |
-          wget https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
-          unzip -o SDN_ADVANCED.ZIP
-          # 파일명이 다르면 여기서 에러가 납니다. 이름을 꼭 확인하세요!
-          python generate_ofac.py
-
-      - name: Commit and Push
+- name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          
+          # 1. 생성된 CSV 파일 스테이징
           git add ofac_sanctioned_addresses.csv
+          
+          # 2. 변경사항이 있을 때만 커밋
           git commit -m "Update OFAC list: $(date +'%Y-%m-%d')" || exit 0
+          
+          # 3. 중요: 서버의 최신 상태를 먼저 가져와서 합치기 (동기화)
+          git pull --rebase origin main
+          
+          # 4. 서버로 전송
           git push
