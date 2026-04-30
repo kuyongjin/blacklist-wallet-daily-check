@@ -24,21 +24,19 @@ def main():
     if response.get("status") == "1":
         wallets = []
         for item in response["result"]:
-            # 데이터에서 지갑 주소 부분만 파싱 (앞의 0들 제거하고 0x 붙이기)
             raw_address = item.get("data", "")
             if len(raw_address) >= 40:
                 clean_address = "0x" + raw_address[-40:]
                 wallets.append(["USDT(테더사 동결지갑)", clean_address.lower()])
         
-        # 데이터프레임 변환 및 중복 제거
         df = pd.DataFrame(wallets, columns=["코인명(온체인)", "지갑주소"])
         df = df.drop_duplicates().sort_values(by=["지갑주소"])
         
-        # 고정 파일명으로 저장 (덮어쓰기)
         output_name = "usdt_blacklist_addresses.csv"
         df.to_csv(output_name, index=False, encoding='utf-8-sig')
         print(f"성공: {len(df)}개 USDT 동결 지갑 추출 완료 ({output_name} 저장)")
-        else:
+    else:
+        # 방금 수정한 상세 에러 확인용 코드 (들여쓰기 완벽하게 맞춤)
         print(f"API 호출 실패: {response.get('message')} / 상세내용: {response.get('result')}")
 
 if __name__ == "__main__":
