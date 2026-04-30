@@ -1,7 +1,6 @@
 import json
 import urllib.request
 import pandas as pd
-from datetime import datetime
 
 # OpenSanctions '제재(Sanctions)' 데이터셋 URL (스트리밍용 JSON)
 url = "https://data.opensanctions.org/datasets/latest/sanctions/entities.ftm.json"
@@ -37,9 +36,9 @@ def main():
     df = pd.DataFrame(wallets, columns=["코인명(OpenSanctions)", "지갑주소"])
     df = df.drop_duplicates().sort_values(by=["코인명(OpenSanctions)", "지갑주소"])
 
-    # 파일 저장 (오늘 날짜 포함)
-    today = datetime.now().strftime('%Y%m%d')
-    output_name = f"opensanctions_addresses_{today}.csv"
+    # --- [수정 구간] 고정 파일명으로 변경 (매일 덮어쓰기) ---
+    output_name = "opensanctions_addresses.csv"
+    # ---------------------------------------------
     
     df.to_csv(output_name, index=False, encoding='utf-8-sig')
     print(f"성공: {len(df)}개 주소 추출 완료 ({output_name} 저장)")
