@@ -1,9 +1,9 @@
-name: Daily Sanction List Update
+name: Daily Sanction & Malicious Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 매일 자정 실행
-  workflow_dispatch:      # 수동 실행 버튼 활성화
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,23 +25,23 @@ jobs:
 
       - name: Run Data Collection
         run: |
-          # 1. OFAC 데이터 다운로드 및 분석
+          # 1. OFAC & OpenSanctions
           wget https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
           unzip -o SDN_ADVANCED.ZIP
           python generate_ofac.py
-          
-          # 2. OpenSanctions 데이터 분석
           python generate_opensanctions.py
+          
+          # 2. Malicious(Hacker/Scam) OSINT
+          python generate_malicious.py
 
       - name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # 생성된 2개 파일만 관리합니다.
           git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
+          git add malicious_addresses.csv
           
-          # 변경사항이 있을 때만 커밋
-          git commit -m "Update Sanction Lists $(date +'%Y%m%d')" || exit 0
+          git commit -m "Update All Lists $(date +'%Y%m%d')" || exit 0
           git push origin main --force
