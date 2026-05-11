@@ -36,13 +36,13 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # [강력 처방] CSV 파일 끝에 공백 하나를 추가해 '내용'을 강제로 바꿈
-          echo " " >> ofac_sanctioned_addresses.csv
-          echo " " >> opensanctions_addresses.csv
+          # [최종 처방] 파일 맨 끝에 오늘 날짜와 시간을 주석으로 추가
+          # 이렇게 하면 매일 파일 내용이 물리적으로 달라집니다.
+          echo "# Last Update: $(date)" >> ofac_sanctioned_addresses.csv
+          echo "# Last Update: $(date)" >> opensanctions_addresses.csv
           
           git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
           
-          # 내용이 무조건 바뀌었으므로 --allow-empty 없이도 커밋이 생성됩니다.
           git commit -m "Update Sanction Lists $(date +'%Y%m%d')"
           git push origin main
