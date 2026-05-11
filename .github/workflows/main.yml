@@ -33,7 +33,7 @@ jobs:
           # 2. OpenSanctions 데이터 분석
           python generate_opensanctions.py
 
-          # 3. 임시 원본 파일 삭제 (Untracked 리스트 방지)
+          # 3. 임시 원본 파일 삭제 (깔끔한 레포 관리)
           rm -f SDN_ADVANCED.ZIP SDN_ADVANCED.XML
 
       - name: Commit and Push
@@ -41,13 +41,15 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # 매일 무조건 업데이트 기록을 남기기 위해 시간 정보를 텍스트에 기록
+          # [핵심] 파일 내용이 같아도 수정 시간을 현재로 바꿔서 Git이 인식하게 함
+          touch ofac_sanctioned_addresses.csv
+          touch opensanctions_addresses.csv
           echo "Last sync: $(date)" > last_updated.txt
           
           git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
           git add last_updated.txt
           
-          # last_updated.txt 내용이 매일 바뀌므로 무조건 커밋이 생성됩니다.
-          git commit -m "Update Sanction Lists $(date +'%Y%m%d')" || exit 0
+          # [핵심] --allow-empty 옵션으로 내용 변화 여부와 상관없이 무조건 커밋 생성
+          git commit --allow-empty -m "Update Sanction Lists $(date +'%Y%m%d')"
           git push origin main
