@@ -3,7 +3,7 @@ name: Daily Sanction List Update
 on:
   schedule:
     - cron: '0 0 * * *'  # 매일 자정 실행
-  workflow_dispatch:      # 필요할 때 수동 실행
+  workflow_dispatch:      # 수동 실행 가능
 
 jobs:
   build:
@@ -33,15 +33,21 @@ jobs:
           # 2. OpenSanctions 데이터 분석
           python generate_opensanctions.py
 
+          # 3. 임시 원본 파일 삭제 (Untracked 리스트 방지)
+          rm -f SDN_ADVANCED.ZIP SDN_ADVANCED.XML
+
       - name: Commit and Push
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # 제재 명단 관련 CSV만 저장합니다.
+          # 매일 무조건 업데이트 기록을 남기기 위해 시간 정보를 텍스트에 기록
+          echo "Last sync: $(date)" > last_updated.txt
+          
           git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
+          git add last_updated.txt
           
-          # 변경사항이 있을 때만 커밋 (없으면 조용히 종료)
+          # last_updated.txt 내용이 매일 바뀌므로 무조건 커밋이 생성됩니다.
           git commit -m "Update Sanction Lists $(date +'%Y%m%d')" || exit 0
-          git push origin main --force
+          git push origin main
