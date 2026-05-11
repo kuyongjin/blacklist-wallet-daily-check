@@ -2,8 +2,8 @@ name: Daily Sanction List Update
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 매일 자정 실행
-  workflow_dispatch:      # 수동 실행 가능
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -25,15 +25,10 @@ jobs:
 
       - name: Run Sanction List Collection
         run: |
-          # 1. OFAC 데이터 다운로드 및 분석
           wget https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
           unzip -o SDN_ADVANCED.ZIP
           python generate_ofac.py
-          
-          # 2. OpenSanctions 데이터 분석
           python generate_opensanctions.py
-
-          # 3. 임시 원본 파일 삭제 (깔끔한 레포 관리)
           rm -f SDN_ADVANCED.ZIP SDN_ADVANCED.XML
 
       - name: Commit and Push
@@ -41,15 +36,13 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # [핵심] 파일 내용이 같아도 수정 시간을 현재로 바꿔서 Git이 인식하게 함
-          touch ofac_sanctioned_addresses.csv
-          touch opensanctions_addresses.csv
-          echo "Last sync: $(date)" > last_updated.txt
+          # [강력 처방] CSV 파일 끝에 공백 하나를 추가해 '내용'을 강제로 바꿈
+          echo " " >> ofac_sanctioned_addresses.csv
+          echo " " >> opensanctions_addresses.csv
           
           git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
-          git add last_updated.txt
           
-          # [핵심] --allow-empty 옵션으로 내용 변화 여부와 상관없이 무조건 커밋 생성
-          git commit --allow-empty -m "Update Sanction Lists $(date +'%Y%m%d')"
+          # 내용이 무조건 바뀌었으므로 --allow-empty 없이도 커밋이 생성됩니다.
+          git commit -m "Update Sanction Lists $(date +'%Y%m%d')"
           git push origin main
