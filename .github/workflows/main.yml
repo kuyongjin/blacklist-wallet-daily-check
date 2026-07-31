@@ -21,14 +21,10 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        # cloudscraper를 제거하고 기본적인 requests만 사용합니다.
         run: pip install pandas requests
 
       - name: Run Sanction List Collection
         run: |
-          # OFAC 직접 다운로드/압축해제 단계를 삭제하고
-          # 변경된 파이썬 스크립트만 실행합니다.
-          python generate_ofac.py
           python generate_opensanctions.py
 
       - name: Commit and Push
@@ -36,10 +32,8 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          echo "# Last Update: $(date)" >> ofac_sanctioned_addresses.csv
           echo "# Last Update: $(date)" >> opensanctions_addresses.csv
           
-          git add ofac_sanctioned_addresses.csv 
           git add opensanctions_addresses.csv
           
           git commit -m "Update Sanction Lists $(date +'%Y%m%d')"
