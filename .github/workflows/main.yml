@@ -21,15 +21,15 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        run: pip install pandas requests cloudscraper
+        # cloudscraper를 제거하고 기본적인 requests만 사용합니다.
+        run: pip install pandas requests
 
       - name: Run Sanction List Collection
         run: |
-          python download_ofac.py
-          unzip -o SDN_ADVANCED.ZIP
+          # OFAC 직접 다운로드/압축해제 단계를 삭제하고
+          # 변경된 파이썬 스크립트만 실행합니다.
           python generate_ofac.py
           python generate_opensanctions.py
-          rm -f SDN_ADVANCED.ZIP SDN_ADVANCED.XML
 
       - name: Commit and Push
         run: |
