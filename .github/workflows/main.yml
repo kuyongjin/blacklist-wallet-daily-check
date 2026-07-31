@@ -21,11 +21,11 @@ jobs:
           python-version: '3.11'
 
       - name: Install Dependencies
-        run: pip install pandas requests
+        run: pip install pandas requests cloudscraper
 
       - name: Run Sanction List Collection
         run: |
-          curl -o SDN_ADVANCED.ZIP -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" -H "Accept-Language: en-US,en;q=0.5" https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
+          python download_ofac.py
           unzip -o SDN_ADVANCED.ZIP
           python generate_ofac.py
           python generate_opensanctions.py
@@ -36,8 +36,6 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          # [최종 처방] 파일 맨 끝에 오늘 날짜와 시간을 주석으로 추가
-          # 이렇게 하면 매일 파일 내용이 물리적으로 달라집니다.
           echo "# Last Update: $(date)" >> ofac_sanctioned_addresses.csv
           echo "# Last Update: $(date)" >> opensanctions_addresses.csv
           
