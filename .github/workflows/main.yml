@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Sanction List Collection
         run: |
-          wget https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
+          wget --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)" https://sanctionslistservice.ofac.treas.gov/api/PublicationPreview/exports/SDN_ADVANCED.ZIP
           unzip -o SDN_ADVANCED.ZIP
           python generate_ofac.py
           python generate_opensanctions.py
